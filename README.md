@@ -2,6 +2,17 @@
 
 ![Fetched emails](./assets/emails.png)
 
+# Testing
+
+The app has only authorised the following emails for testing:
+- crunchybucket86@gmail.com
+
+Attempting to authorise any other gmail will result in 403 error.
+
+To add more emails, go to the google console cloud > OAuth consent screen for `truyu poc email` > Test users
+
+![Oauth consent screen](./assets/oauth-consent-screen.png)
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
