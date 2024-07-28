@@ -1,10 +1,31 @@
-import React, { useState } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 
+interface EmailData {
+  historyId: string;
+  id: string;
+  internalDate: string;
+  labelIds: string[];
+  payload: {
+    body: {
+      size: number
+    },
+    filename: string;
+    headers: Record<string, string>[];
+    mimeType: string;
+    partId: string;
+    parts: Record<string, any>[];
+  };
+  sizeEstimate: number;
+  snippet: string;
+  threadId: string;
+}
+
 function GoogleApp() {
-  const [accessToken, setAccessToken] = useState(null);
-  const [emails, setEmails] = useState([]);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [emails, setEmails] = useState<EmailData[]>([]);
 
   const login = useGoogleLogin({
     onSuccess: (response) => {
@@ -28,16 +49,21 @@ function GoogleApp() {
         },
       });
       console.log('data', res.data)
+      const messages: {
+        threadId: string;
+        id: string;
+      }[] = res.data.messages
 
-      if (res.data.messages.length) {
-        const emailContent = await Promise.all(res.data.messages.map(message => axios.get(`https://www.googleapis.com/gmail/v1/users/me/messages/${message.id}`, {
+      if (messages.length) {
+        const emailContent = await Promise.all(messages.map(message => axios.get(`https://www.googleapis.com/gmail/v1/users/me/messages/${message.id}`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         })))
+
         if (emailContent.length) {
           console.log('emailContent', emailContent)
-          const emailData = emailContent.map(email => email.data)
+          const emailData: EmailData[] = emailContent.map(email => email.data)
           setEmails(emailData);
         }
       }
