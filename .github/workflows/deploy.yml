@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      GMAIL_CLIENT_ID: ${{ vars.GMAIL_CLIENT_ID }}
 
     steps:
       - name: Checkout code
