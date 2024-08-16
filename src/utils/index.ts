@@ -25,4 +25,35 @@ export function extractSenderInfo(input: string) {
     return { name, email };
   }
   return null;
-} 
+}
+
+export function mergeEmailsByNameOrEmail(data: Record<string, string>[]) {
+  const map = new Map();
+
+  data.forEach(({ name, email }) => {
+    if (map.has(name)) {
+      map.get(name).emails.add(email);
+    } else if (map.has(email)) {
+      map.get(email).names.add(name);
+    } else {
+      const entry = { names: new Set([name]), emails: new Set([email]) };
+      map.set(name, entry);
+      map.set(email, entry);
+    }
+  });
+
+  const result = [];
+  const seen = new Set();
+
+  map.forEach((value, key) => {
+    if (!seen.has(value)) {
+      result.push({
+        names: Array.from(value.names).filter(Boolean),
+        emails: Array.from(value.emails)
+      });
+      seen.add(value);
+    }
+  });
+
+  return result;
+}

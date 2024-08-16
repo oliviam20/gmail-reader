@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
-import { getBatches, getMissingStrings, extractSenderInfo } from './utils';
+import { getBatches, getMissingStrings, extractSenderInfo, mergeEmailsByNameOrEmail } from './utils';
 import { multipartMixedGmailParse, getBatchMessageBodyStrings, getBatchMessages } from './utils/gmail';
 import { WorkerPool } from './utils/worker-pool'
 
@@ -128,7 +128,10 @@ function GoogleApp() {
         const uniqueSet = new Set(senders);
         const uniqueArray = Array.from(uniqueSet);
         const companyNamesAndEmails = uniqueArray.map(sender => extractSenderInfo(sender) ?? {});
-        setCompanies(companyNamesAndEmails)
+
+        const mergedCompanies = mergeEmailsByNameOrEmail(companyNamesAndEmails);
+
+        setCompanies(mergedCompanies)
         
         // const b = await axios.request(config)
         // console.log('1111', b.data)
