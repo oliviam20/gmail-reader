@@ -181,6 +181,7 @@ function GoogleApp() {
         ) : (
           <div>
             <button className="mb-2" onClick={fetchEmails}>Fetch Emails</button>
+            {companies?.length > 0 ? <div>Number of companies that have your data: {companies.length}</div> : null}
             {emails.map((email) => {
               const subject = email.payload.headers.find(header => header.name === 'Subject')?.value;
               const from = email.payload.headers.find(header => header.name === 'From')?.value;
