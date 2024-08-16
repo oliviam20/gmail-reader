@@ -1,16 +1,3 @@
-export function multipartMixedGmailParse(data: string) {
-  const separator = data.trim().split('\n')[0].trim()
-  const parts = data.split(separator).map(part => part.trim()).filter(part => part !== '' && part !== '--')
-  // return parts.map(part => JSON.parse(part.split('\n')[3]))
-   return parts.map(part => 
-    {
-      const split = part.split('\n')
-      const index = split.findIndex(str => str === '{')
-      const arr = split.slice(index).join('')
-      return JSON.parse(arr)
-    })
-}
-
 export function getBatches(data: string[], batchSize: number = 50) {
   const batches = [];
   const totalBatches = Math.ceil(data.length / batchSize);
@@ -24,3 +11,18 @@ export function getBatches(data: string[], batchSize: number = 50) {
 
   return batches;
 }
+
+export function getMissingStrings(array1: string[], array2: string[]): string[] {
+  return array1.filter(str => !array2.includes(str));
+}
+
+export function extractSenderInfo(input: string) {
+  const regex = /^(?:"?([^"]*)"?\s)?<?([^<>]+)>?$/;
+  const match = input.match(regex);
+  if (match) {
+    const name = match[1] ? match[1].trim() : null;
+    const email = match[2].trim();
+    return { name, email };
+  }
+  return null;
+} 
