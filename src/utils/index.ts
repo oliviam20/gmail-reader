@@ -27,7 +27,7 @@ export function extractSenderInfo(input: string) {
   return null;
 }
 
-export function mergeEmailsByNameOrEmail(data: Record<string, string>[]) {
+export function mergeEmailsByNameOrEmail(data: Record<string, string>[]): {names: string[], emails: string[]}[] {
   const map = new Map();
 
   data.forEach(({ name, email }) => {
@@ -46,6 +46,8 @@ export function mergeEmailsByNameOrEmail(data: Record<string, string>[]) {
   const seen = new Set();
 
   map.forEach((value, key) => {
+    // console.log('value', value)
+    // console.log('key', key)
     if (!seen.has(value)) {
       result.push({
         names: Array.from(value.names).filter(Boolean),
