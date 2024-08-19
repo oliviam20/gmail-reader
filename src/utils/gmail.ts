@@ -58,7 +58,7 @@ export async function getBatchGmailMessages(pool: WorkerPool, accessToken: strin
   return parsedResults;
 }
 
-export async function getGmailMessageList(accessToken: string, pageToken: string | null) {
+export async function getGmailMessageList(accessToken: string, pageToken?: string) {
   try {
     // scope is readonly
     // filter with q, https://support.google.com/mail/answer/7190?hl=en
@@ -71,12 +71,12 @@ export async function getGmailMessageList(accessToken: string, pageToken: string
         // q: 'subject:welcome after:2023/08/12'
         // q: 'subject:welcome'
         // q: 'subject:(introducing%20welcome)'
-        q: '{subject:welcome subject:introducing subject:order}',
+        q: '{subject:welcome subject:introducing subject:order subject:receipt subject:invoice subject:tracking subject:purchase} AND -olivia.t.mo@outlook.com AND -l.jonathan.mo@gmail.com',
         ...(pageToken ? { pageToken } : {})
       }
     });
 
-    const nextPageToken: string | null = messageResponse.data.nextPageToken ?? null;
+    const nextPageToken: string | undefined = messageResponse.data.nextPageToken;
     const messages: {
       threadId: string;
       id: string;
@@ -85,6 +85,7 @@ export async function getGmailMessageList(accessToken: string, pageToken: string
     return { nextPageToken, messages };
   } catch (error) {
     console.error('Error fetching gmail messages list', error);
+    throw new Error('Error fetching gmail messages list');
   }
 }
 
