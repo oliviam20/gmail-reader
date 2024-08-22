@@ -58,11 +58,11 @@ export async function getBatchGmailMessages(pool: WorkerPool, accessToken: strin
   return parsedResults;
 }
 
-export async function getGmailMessageList(accessToken: string, pageToken?: string) {
+export async function getGmailMessageList(accessToken: string, year: number, pageToken?: string) {
   try {
     // scope is readonly
     // filter with q, https://support.google.com/mail/answer/7190?hl=en
-    // time can be from epoch seconds
+    // All dates used in the search query are interpreted as midnight on that date in the PST timezone. To specify accurate dates for other timezones pass the value in seconds instead (epoch)
     const messageResponse = await axios.get('https://www.googleapis.com/gmail/v1/users/me/messages', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -71,7 +71,8 @@ export async function getGmailMessageList(accessToken: string, pageToken?: strin
         // q: 'subject:welcome after:2023/08/12'
         // q: 'subject:welcome'
         // q: 'subject:(introducing%20welcome)'
-        q: '{subject:welcome subject:introducing subject:order subject:receipt subject:invoice subject:tracking subject:purchase} AND -olivia.t.mo@outlook.com AND -l.jonathan.mo@gmail.com',
+        // q: '{subject:welcome subject:introducing subject:order subject:receipt subject:invoice subject:tracking subject:purchase} AND -olivia.t.mo@outlook.com AND -l.jonathan.mo@gmail.com AND before:2024/08/01 AND after:2023/08/01',
+        q: `{subject:welcome subject:introducing subject:order subject:receipt subject:invoice subject:tracking subject:purchase label:spam} AND -olivia.t.mo@outlook.com AND -l.jonathan.mo@gmail.com AND before:${year + 1}/01/01 after:${year}/01/01`,
         ...(pageToken ? { pageToken } : {})
       }
     });

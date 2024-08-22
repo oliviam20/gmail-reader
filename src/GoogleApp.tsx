@@ -3,7 +3,8 @@ import { useState, useMemo, useCallback } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { extractSenderInfo, mergeEmailsByNameOrEmail } from './utils';
 import { fetchGmailMessages, getGmailMessageList } from './utils/gmail';
-import { WorkerPool } from './utils/worker-pool'
+import { WorkerPool } from './utils/worker-pool';
+
 
 interface EmailData {
   historyId: string;
@@ -50,10 +51,10 @@ function GoogleApp() {
     timeout: 3000, // 3 seconds
   }), []);
 
-  const getAllGmailMessages = useCallback(async (accessToken: string, pageToken?: string, isFirstFetch?: boolean | undefined) => {
+  const getAllGmailMessages = useCallback(async (accessToken: string, isFirstFetch: boolean, year: number, pageToken?: string) => {
     const startTime = new Date();
 
-    const res = await getGmailMessageList(accessToken, pageToken);
+    const res = await getGmailMessageList(accessToken, year, pageToken);
     const {
       messages,
       nextPageToken
@@ -66,7 +67,7 @@ function GoogleApp() {
     } = res;
 
     let results: EmailData[] = [];
-    if (messages.length) {
+    if (messages?.length) {
       const messageIds = messages.map(message => message.id);
       results = await fetchGmailMessages(accessToken, pool, messageIds) ?? [];
 
@@ -83,7 +84,7 @@ function GoogleApp() {
 
     let nextPageEmails: EmailData[] = [];
     if (nextPageToken) {
-      nextPageEmails = await getAllGmailMessages(accessToken, nextPageToken, false) ?? [];
+      nextPageEmails = await getAllGmailMessages(accessToken, false, year, nextPageToken) ?? [];
       console.log('nextPageEmails', nextPageEmails);
     }
     
@@ -99,8 +100,18 @@ function GoogleApp() {
     try {
       const startTime = new Date();
       setIsFetching(true);
-      const emails = await getAllGmailMessages(accessToken, undefined, true);
-      console.log('helloo', emails)
+      // Need to get oldest emails first, limit by oldest 5 years ago
+      const emails = [];
+      const oldestYear = 4
+      for (let i = oldestYear; i > -1; i--) {
+        const currentDate = new Date();
+        const pastDate = new Date(currentDate.setFullYear(currentDate.getFullYear() - i));
+        const year = pastDate.getFullYear();
+        const isFirstFetch = i === oldestYear;
+        const blah = await getAllGmailMessages(accessToken, isFirstFetch, year);
+        emails.push(...blah);
+      }
+      console.log('all emails', emails);
       setEmails(emails);
       setIsFetching(false);
       const endTime = new Date();
@@ -133,6 +144,7 @@ function GoogleApp() {
         {timeToGetAllEmails ? <p>Seconds to get all emails: {timeToGetAllEmails}</p> : null}
         {emails.length ? <p>Total emails fetched: {emails.length}</p> : null}
         {companies?.length > 0 ? <div>Number of companies that have your data: {companies.length}</div> : null}
+        {emails.length ? <a href={`data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(emails))}`} download="gmailData.json">download emails</a> : null}
         {!accessToken ? (
           <button onClick={() => login()}>Login with Google</button>
         ) : (
