@@ -22,10 +22,15 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build
+      - name: Build project
         env:
-          GMAIL_CLIENT_ID: ${{ secrets.GMAIL_CLIENT_ID }}
+          VITE_GMAIL_CLIENT_ID: ${{ secrets.GMAIL_CLIENT_ID }}
         run: npm run build
+
+      # - name: Build
+      #   env:
+      #     GMAIL_CLIENT_ID: ${{ secrets.GMAIL_CLIENT_ID }}
+      #   run: npm run build
         
       - name: Deploy to github pages
         run: echo "Deploying to https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"

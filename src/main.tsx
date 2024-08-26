@@ -6,7 +6,7 @@ import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <GoogleOAuthProvider clientId={process.env.GMAIL_CLIENT_ID!}>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GMAIL_CLIENT_ID!}>
       <GoogleApp />
     </GoogleOAuthProvider>
   </React.StrictMode>,
