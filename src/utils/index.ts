@@ -19,9 +19,12 @@ export function getMissingStrings(array1: string[], array2: string[]): string[] 
 export function extractSenderInfo(input: string) {
   const regex = /^(?:"?([^"]*)"?\s)?<?([^<>]+)>?$/;
   const match = input.match(regex);
+
   if (match) {
-    const name = match[1] ? match[1].trim() : null;
+    
+    const name = match[1] ? match[1].trim() : match[0].split('@')[1];
     const email = match[2].trim();
+
     return { name, email };
   }
   return null;

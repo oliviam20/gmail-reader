@@ -29,7 +29,6 @@ interface EmailData {
 function GoogleApp() {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [emails, setEmails] = useState<EmailData[]>([]);
-  const [companies, setCompanies] = useState<{names: string[], emails: string[]}[]>([]);
   const [isFetching, setIsFetching] = useState<boolean>(false);
   const [firstPageEmails, setFirstPageEmails] = useState<EmailData[]>([]);
   const [timeToGetFirstEmails, setTimeToGetFirstEmails] = useState<string | null>(null);
@@ -50,6 +49,18 @@ function GoogleApp() {
     retries: 2,
     timeout: 3000, // 3 seconds
   }), []);
+
+  const companies = useMemo(() => {
+    const arrEmails = emails.length > firstPageEmails.length ? emails : firstPageEmails;
+    const senders = arrEmails.map(email => email.payload.headers.find(header => header.name === 'From')?.value ?? '') ?? [];
+    const uniqueSet = new Set(senders);
+    const uniqueArray = Array.from(uniqueSet);
+    const companyNamesAndEmails = uniqueArray.map(sender => extractSenderInfo(sender) ?? {});
+
+    const mergedCompanies = mergeEmailsByNameOrEmail(companyNamesAndEmails);
+
+    return mergedCompanies;
+  }, [emails, firstPageEmails]);
 
   const getAllGmailMessages = useCallback(async (accessToken: string, isFirstFetch: boolean, year: number, pageToken?: string) => {
     const startTime = new Date();
@@ -85,7 +96,6 @@ function GoogleApp() {
     let nextPageEmails: EmailData[] = [];
     if (nextPageToken) {
       nextPageEmails = await getAllGmailMessages(accessToken, false, year, nextPageToken) ?? [];
-      console.log('nextPageEmails', nextPageEmails);
     }
     
     return [...results, ...nextPageEmails];
@@ -97,10 +107,13 @@ function GoogleApp() {
       return;
     }
 
+    setTimeToGetFirstEmails(null);
+    setTimeToGetAllEmails(null);
+
     try {
       const startTime = new Date();
       setIsFetching(true);
-      // Need to get oldest emails first, limit by oldest 5 years ago
+      // Need to get oldest emails first, limit by oldest 4 years ago
       const emails = [];
       const oldestYear = 4
       for (let i = oldestYear; i > -1; i--) {
@@ -108,8 +121,8 @@ function GoogleApp() {
         const pastDate = new Date(currentDate.setFullYear(currentDate.getFullYear() - i));
         const year = pastDate.getFullYear();
         const isFirstFetch = i === oldestYear;
-        const blah = await getAllGmailMessages(accessToken, isFirstFetch, year);
-        emails.push(...blah);
+        const allEmails = await getAllGmailMessages(accessToken, isFirstFetch, year);
+        emails.push(...allEmails);
       }
       console.log('all emails', emails);
       setEmails(emails);
@@ -121,20 +134,12 @@ function GoogleApp() {
       const differenceSeconds = (timeDiff / 1000).toFixed(3);
       setTimeToGetAllEmails(differenceSeconds);
 
-      const senders = emails?.map(email => email.payload.headers.find(header => header.name === 'From')?.value ?? '') ?? [];
-        const uniqueSet = new Set(senders);
-        const uniqueArray = Array.from(uniqueSet);
-        const companyNamesAndEmails = uniqueArray.map(sender => extractSenderInfo(sender) ?? {});
-
-        const mergedCompanies = mergeEmailsByNameOrEmail(companyNamesAndEmails);
-
-        setCompanies(mergedCompanies);
     } catch (error) {
       console.error('Error fetching emails:', error);
     }
   }
 
-  console.log('companies', companies)
+  console.log('companies', companies);
 
   return (
     <div className="flex justify-center p-8">
@@ -150,29 +155,20 @@ function GoogleApp() {
         ) : (
           <div>
             {isFetching ? <p>Fetching more emails...</p> : <button className="mb-2" onClick={fetchEmails}>Fetch Emails</button>}
-            {firstPageEmails.map((email) => {
-              const subject = email.payload.headers.find(header => header.name === 'Subject')?.value;
-              const from = email.payload.headers.find(header => header.name === 'From')?.value;
+            {companies.map(company => {
               return (
-              <div key={email.id} className="border border-sky-500 rounded p-2 mb-4">
-                <div className="pb-2">
-                  <h3 className="text-lg font-bold">Email id</h3>
-                  <p>{email.id}</p>
+                <div key={company.names[0]} className="border border-sky-500 rounded p-2 mb-4">
+                  <div className="pb-2">
+                    <h3 className="text-lg font-bold">Company name</h3>
+                    <p>{company.names.length > 1 ? company.emails[0] : company.names[0]}</p>
+                  </div>
+                  <div className="pb-2">
+                    <h3 className="text-lg font-bold">Email</h3>
+                    {company.emails.map(email => <p key={email}>{email}</p>)}
+                  </div>
                 </div>
-                <div className="pb-2">
-                  <h3 className="text-lg font-bold">Labels</h3>
-                  {email.labelIds.map(label => <p key={label}>{label}</p>)}
-                </div>
-                <div className="pb-2">
-                  <h3 className="text-lg font-bold">Sender</h3>
-                  <p>{from}</p>
-                </div>
-                <div className="pb-2">
-                  <h3 className="text-lg font-bold">Subject</h3>
-                  <p>{subject}</p>
-                </div>
-              </div>
-            )})}
+              )
+            })}
           </div>
         )}
       </div>
