@@ -4,6 +4,7 @@ import { useGoogleLogin } from '@react-oauth/google';
 import { extractSenderInfo, mergeEmailsByNameOrEmail } from './utils';
 import { fetchGmailMessages, getGmailMessageList } from './utils/gmail';
 import { WorkerPool } from './utils/worker-pool';
+import Spinner from './components/Spinner'
 
 
 export interface EmailData {
@@ -158,12 +159,16 @@ function GoogleApp() {
         {timeToGetAllEmails ? <p>Seconds to get all emails: {timeToGetAllEmails}</p> : null}
         {emails.length ? <p>Total emails fetched: {emails.length}</p> : null}
         {companies?.length > 0 ? <div>Number of companies that have your data: {companies.length}</div> : null}
-        {/* {emails.length ? <a href={`data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(emails))}`} download="gmailData.json">download emails</a> : null} */}
+        {emails.length ? <button className="mb-2 w-[170px]">
+          <p>
+            <a className="inline-block" href={`data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(emails))}`} download="gmailData.json">Download emails</a>
+          </p>
+        </button> : null}
         {!accessToken ? (
           <button onClick={() => login()}>Login with Google</button>
         ) : (
           <div>
-            {isFetching ? <p>Fetching more emails...</p> : <button className="mb-2" onClick={fetchEmails}>Fetch Emails</button>}
+            {isFetching ? <button className="mb-2 flex items-center"><Spinner /><span className="pl-2">Fetching more emails...</span></button> : <button className="mb-2" onClick={fetchEmails}>Fetch Emails</button>}
             {companies.map(company => {
               return (
                 <div key={company.names[0]} className="border border-sky-500 rounded p-2 mb-4">
