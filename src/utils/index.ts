@@ -29,7 +29,7 @@ export function extractSenderInfo(input: string) {
   return null;
 }
 
-export function mergeEmailsByNameOrEmail(data: Record<string, string | number>[]): {names: string[], emails: string[], joinDate: number, numEmails: number }[] {
+export function mergeEmailsByNameOrEmail(data: Record<string, string | number>[]): { names: string[], emails: string[], joinDate: number, numEmails: number }[] {
   const map = new Map();
 
   data.forEach(({ name, email, joinDate, numEmails }) => {
@@ -54,10 +54,15 @@ export function mergeEmailsByNameOrEmail(data: Record<string, string | number>[]
     }
   });
 
-  const result = [];
+  const result: { names: string[], emails: string[], joinDate: number, numEmails: number }[] = [];
   const seen = new Set();
 
-  map.forEach((value, key) => {
+  map.forEach((value: {
+    names: Set<string>,
+    emails: Set<string>,
+    joinDate: number,
+    numEmails: number
+  }) => {
     if (!seen.has(value)) {
       result.push({
         names: Array.from(value.names).filter(Boolean),

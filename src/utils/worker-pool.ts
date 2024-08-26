@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 interface Options {
   /** Timeout in milliseconds, default is 0 milliseconds (no timeout) */
   timeout: number;
@@ -13,8 +14,8 @@ interface Task<T> {
 export class Deferred<T> {
   private task: Task<T>;
   promise: Promise<T>;
-  resolve: (result: T) => void;
-  reject: (error: any) => void;
+  resolve!: (result: T) => void;
+  reject!: (error: any) => void;
 
   constructor(func: () => Promise<T>, options: Partial<Options> = {}) {
     this.task = {
@@ -34,7 +35,7 @@ export class Deferred<T> {
   async run(attempts: number = 0): Promise<void> {
     try {
       // handle timeouts
-      if (this.task.options.timeout) {
+      if (this.task.options?.timeout) {
         let timeout: NodeJS.Timeout | undefined;
         let rejected = false;
         const cancelTimeout = () => {
@@ -43,12 +44,13 @@ export class Deferred<T> {
             timeout = undefined;
           }
         };
+        // eslint-disable-next-line no-async-promise-executor
         const result = await new Promise<T>(async (resolve, reject) => {
           timeout = setTimeout(() => {
             rejected = true;
             cancelTimeout();
             reject(new Error('Task timed out'));
-          }, this.task.options.timeout);
+          }, this.task.options?.timeout);
 
           try {
             const result = await this.task.func();
@@ -70,7 +72,7 @@ export class Deferred<T> {
       const result = await this.task.func();
       this.resolve(result);
     } catch (error) {
-      if (attempts < this.task.options.retries) {
+      if (attempts < (this.task.options?.retries ?? 0)) {
         return this.run(attempts + 1);
       }
       this.reject(error);

@@ -36,11 +36,9 @@ function GoogleApp() {
 
   const login = useGoogleLogin({
     onSuccess: (response) => {
-      console.log('Login Success:', response);
       setAccessToken(response.access_token);
     },
     onError: (error) => console.log('Login Failed:', error),
-    // scope: 'https://www.googleapis.com/auth/gmail.metadata',
     scope: 'https://www.googleapis.com/auth/gmail.readonly',
     overrideScope: false
   });
@@ -135,7 +133,7 @@ function GoogleApp() {
         const allEmails = await getAllGmailMessages(accessToken, isFirstFetch, year);
         emails.push(...allEmails);
       }
-      console.log('all emails', emails);
+
       setEmails(emails);
       setIsFetching(false);
       const endTime = new Date();
