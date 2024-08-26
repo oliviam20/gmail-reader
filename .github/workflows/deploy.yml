@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy 🚀
 
 on:
   push:
@@ -8,8 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      GMAIL_CLIENT_ID: ${{ vars.GMAIL_CLIENT_ID }}
 
     steps:
       - name: Checkout code
@@ -25,6 +23,9 @@ jobs:
         run: npm install
 
       - name: Build
-        run: npm run build
         env:
-          GMAIL_CLIENT_ID: ${{ env.GMAIL_CLIENT_ID }}
+          GMAIL_CLIENT_ID: ${{ secrets.GMAIL_CLIENT_ID }}
+        run: npm run build
+        
+      - name: Deploy to github pages
+        run: echo "Deploying to https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
