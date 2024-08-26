@@ -6,7 +6,7 @@ import { fetchGmailMessages, getGmailMessageList } from './utils/gmail';
 import { WorkerPool } from './utils/worker-pool';
 
 
-interface EmailData {
+export interface EmailData {
   historyId: string;
   id: string;
   internalDate: string;
@@ -55,11 +55,22 @@ function GoogleApp() {
     const senders = arrEmails.map(email => email.payload.headers.find(header => header.name === 'From')?.value ?? '') ?? [];
     const uniqueSet = new Set(senders);
     const uniqueArray = Array.from(uniqueSet);
-    const companyNamesAndEmails = uniqueArray.map(sender => extractSenderInfo(sender) ?? {});
+    const companyNamesAndEmails = uniqueArray.map(sender => {
+      const senderEmails = arrEmails.filter(email => email.payload.headers.find(header => header.name === 'From')?.value === sender);
+      const sortEmails = senderEmails.sort((a, b) => new Date(parseInt(a.internalDate)).getTime() - new Date(parseInt(b.internalDate)).getTime());
+      const senderInfo = extractSenderInfo(sender) ?? {};
+      return {
+        ...senderInfo,
+        joinDate: parseInt(sortEmails[0].internalDate),
+        numEmails: sortEmails.length
+      }
+    });
 
     const mergedCompanies = mergeEmailsByNameOrEmail(companyNamesAndEmails);
 
-    return mergedCompanies;
+    const sortedMergedCompanies = mergedCompanies.sort((a, b) => a.joinDate - b.joinDate);
+
+    return sortedMergedCompanies;
   }, [emails, firstPageEmails]);
 
   const getAllGmailMessages = useCallback(async (accessToken: string, isFirstFetch: boolean, year: number, pageToken?: string) => {
@@ -149,7 +160,7 @@ function GoogleApp() {
         {timeToGetAllEmails ? <p>Seconds to get all emails: {timeToGetAllEmails}</p> : null}
         {emails.length ? <p>Total emails fetched: {emails.length}</p> : null}
         {companies?.length > 0 ? <div>Number of companies that have your data: {companies.length}</div> : null}
-        {emails.length ? <a href={`data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(emails))}`} download="gmailData.json">download emails</a> : null}
+        {/* {emails.length ? <a href={`data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(emails))}`} download="gmailData.json">download emails</a> : null} */}
         {!accessToken ? (
           <button onClick={() => login()}>Login with Google</button>
         ) : (
@@ -165,6 +176,14 @@ function GoogleApp() {
                   <div className="pb-2">
                     <h3 className="text-lg font-bold">Email</h3>
                     {company.emails.map(email => <p key={email}>{email}</p>)}
+                  </div>
+                  <div className="pb-2">
+                    <h3 className="text-lg font-bold">Joined</h3>
+                    <p>{new Date(company.joinDate).toDateString()}</p>
+                  </div>
+                  <div className="pb-2">
+                    <h3 className="text-lg font-bold">Number of emails</h3>
+                    <p>{company.numEmails}</p>
                   </div>
                 </div>
               )
