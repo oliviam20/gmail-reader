@@ -24,6 +24,16 @@ On push to `main`, the project will be deployed to github pages.
 
 This is done via github actions in `.github/workflows/deploy.yml`
 
+# Development
+
+### Linting
+
+This project uses ESLint for linting. That is configured in `.eslintrc.cjs`.
+
+### Formatting
+
+We use [Prettier](https://prettier.io/) for auto-formatting in this project. It's recommended to install an editor plugin (like the [VSCode Prettier plugin](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)) to get auto-formatting on save (may need to enable it manually in vs code formatting settings).
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
