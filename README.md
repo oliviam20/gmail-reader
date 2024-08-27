@@ -2,16 +2,27 @@
 
 ![Fetched emails](./assets/emails.png)
 
+# Google Cloud Console
+
+This project is using Google Cloud Console for OAuth2.0 authentication. The project is called `truyu-poc-email`.
+
+The account belongs to crunchybucket
+
 # Testing
 
-The app has only authorised the following emails for testing:
-- crunchybucket86@gmail.com
+The app has only authorised the some emails for testing.
 
 Attempting to authorise any other gmail will result in 403 error.
 
 To add more emails, go to the google console cloud > OAuth consent screen for `truyu poc email` > Test users
 
 ![Oauth consent screen](./assets/oauth-consent-screen.png)
+
+# Deployment
+
+On push to `main`, the project will be deployed to github pages.
+
+This is done via github actions in `.github/workflows/deploy.yml`
 
 # React + TypeScript + Vite
 
