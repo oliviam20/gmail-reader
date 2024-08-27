@@ -49,7 +49,7 @@ export class Deferred<T> {
           timeout = setTimeout(() => {
             rejected = true;
             cancelTimeout();
-            reject(new Error('Task timed out'));
+            reject(new Error("Task timed out"));
           }, this.task.options?.timeout);
 
           try {
@@ -95,10 +95,7 @@ export class WorkerPool {
     };
   }
 
-  execute<T>(
-    func: () => Promise<T>,
-    options: Partial<Options> = {}
-  ): Promise<T> {
+  execute<T>(func: () => Promise<T>, options: Partial<Options> = {}): Promise<T> {
     const deferred = new Deferred<T>(func, {
       ...this.defaultOptions,
       ...options,

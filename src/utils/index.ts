@@ -13,7 +13,7 @@ export function getBatches(data: string[], batchSize: number = 50) {
 }
 
 export function getMissingStrings(array1: string[], array2: string[]): string[] {
-  return array1.filter(str => !array2.includes(str));
+  return array1.filter((str) => !array2.includes(str));
 }
 
 export function extractSenderInfo(input: string) {
@@ -21,7 +21,7 @@ export function extractSenderInfo(input: string) {
   const match = input.match(regex);
 
   if (match) {
-    const name = match[1] ? match[1].trim() : match[0].split('@')[1];
+    const name = match[1] ? match[1].trim() : match[0].split("@")[1];
     const email = match[2].trim();
 
     return { name, email };
@@ -29,22 +29,24 @@ export function extractSenderInfo(input: string) {
   return null;
 }
 
-export function mergeEmailsByNameOrEmail(data: Record<string, string | number>[]): { names: string[], emails: string[], joinDate: number, numEmails: number }[] {
+export function mergeEmailsByNameOrEmail(
+  data: Record<string, string | number>[],
+): { names: string[]; emails: string[]; joinDate: number; numEmails: number }[] {
   const map = new Map();
 
   data.forEach(({ name, email, joinDate, numEmails }) => {
     if (map.has(name)) {
       map.get(name).emails.add(email);
       const currentDate = map.get(name).joinDate;
-        const earliestDate = joinDate > currentDate ? currentDate : joinDate;
-        map.get(name).joinDate = earliestDate;
+      const earliestDate = joinDate > currentDate ? currentDate : joinDate;
+      map.get(name).joinDate = earliestDate;
       const currentNumEmails = map.get(name).numEmails;
       map.get(name).numEmails = currentNumEmails + numEmails;
     } else if (map.has(email)) {
       map.get(email).names.add(name);
       const currentDate = map.get(email).joinDate;
-        const earliestDate = joinDate > currentDate ? currentDate : joinDate;
-        map.get(email).joinDate = earliestDate;
+      const earliestDate = joinDate > currentDate ? currentDate : joinDate;
+      map.get(email).joinDate = earliestDate;
       const currentNumEmails = map.get(email).numEmails;
       map.get(email).numEmails = currentNumEmails + numEmails;
     } else {
@@ -54,21 +56,16 @@ export function mergeEmailsByNameOrEmail(data: Record<string, string | number>[]
     }
   });
 
-  const result: { names: string[], emails: string[], joinDate: number, numEmails: number }[] = [];
+  const result: { names: string[]; emails: string[]; joinDate: number; numEmails: number }[] = [];
   const seen = new Set();
 
-  map.forEach((value: {
-    names: Set<string>,
-    emails: Set<string>,
-    joinDate: number,
-    numEmails: number
-  }) => {
+  map.forEach((value: { names: Set<string>; emails: Set<string>; joinDate: number; numEmails: number }) => {
     if (!seen.has(value)) {
       result.push({
         names: Array.from(value.names).filter(Boolean),
         emails: Array.from(value.emails),
         joinDate: value.joinDate,
-        numEmails: value.numEmails
+        numEmails: value.numEmails,
       });
       seen.add(value);
     }
